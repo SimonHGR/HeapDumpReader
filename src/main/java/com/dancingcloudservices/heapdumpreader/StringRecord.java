@@ -9,7 +9,7 @@ import java.io.StringReader;
 import java.nio.charset.Charset;
 import java.util.Map;
 
-public class StringRecord extends Record {
+public class StringRecord implements Record {
     public final long id;
     public final String value;
     public StringRecord(long id, String value) {

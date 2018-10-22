@@ -6,7 +6,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
 
-public class ClassRecord extends Record {
+public class ClassRecord implements Record {
 
     public final long objectId;
     public final String name;

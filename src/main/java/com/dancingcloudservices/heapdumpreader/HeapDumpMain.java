@@ -1,5 +1,6 @@
 package com.dancingcloudservices.heapdumpreader;
 
+import com.dancingcloudservices.heapdumpreader.utils.MyBufferedInputStream;
 import com.dancingcloudservices.heapdumpreader.utils.Tag;
 import com.dancingcloudservices.heapdumpreader.utils.Utils;
 
@@ -13,19 +14,19 @@ import java.util.TreeMap;
 public class HeapDumpMain {
     private static final Set<Tag> tagsToShow = Set.of(
 //            Tag.STRING_UTF8,
-            Tag.LOAD_CLASS,
-//            Tag.UNLOAD_CLASS,
+//            Tag.LOAD_CLASS,
+            Tag.UNLOAD_CLASS,
 //            Tag.STACK_FRAME,
 //            Tag.STACK_TRACE,
-//            Tag.ALLOC_SITES,
-//            Tag.HEAP_SUMMARY,
-//            Tag.START_THREAD,
-//            Tag.END_THREAD,
-//            Tag.HEAP_DUMP,
-//            Tag.HEAP_DUMP_SEGMENT,
-//            Tag.HEAP_DUMP_END,
-//            Tag.CPU_SAMPLES,
-//            Tag.CONTROL_SETTINGS
+            Tag.ALLOC_SITES,
+            Tag.HEAP_SUMMARY,
+            Tag.START_THREAD,
+            Tag.END_THREAD,
+            Tag.HEAP_DUMP,
+            Tag.HEAP_DUMP_SEGMENT,
+            Tag.HEAP_DUMP_END,
+            Tag.CPU_SAMPLES,
+            Tag.CONTROL_SETTINGS,
             Tag.BAD_TAG
     );
 
@@ -44,7 +45,11 @@ public class HeapDumpMain {
         String filename = args.length > 0 ? args[0]
                 : "/media/simon/2cffd6bf-24ea-453a-acef-a5ca32fe8929/JAMF-Data/Week 1 - Data collection/Monday - 10-01-2018/std-pagetia1-tc-4/std-pagetia1-tc-4_monday.dump";
         FileInputStream fis = new FileInputStream(filename);
-        InputStream dumpInput = /*new BufferedInputStream(*/fis/*)*/;
+        InputStream dumpInput =
+                new MyBufferedInputStream(
+                        fis
+                , 128)
+                ;
         String fileHeader = Utils.readNullTermString(dumpInput);
         if (!acceptableDumpFormat(fileHeader)) {
             System.err.println("Cannot handle " + fileHeader);
@@ -60,7 +65,7 @@ public class HeapDumpMain {
 
         long records = 0;
         while (dumpInput.available() > 0
-//            && records < 10
+//            && records < 100
         ) {
             ++records;
             TaggedRecord tr = TaggedRecord.builder()
@@ -71,6 +76,10 @@ public class HeapDumpMain {
 
             if (showThisTag(tr.getTag())){
                 Utils.debug("****" + tr);
+            } else {
+                if (records % 10_000 == 0) {
+                    Utils.debug("Records: " + records);
+                }
             }
         }
         Utils.debug(records + " top-level records read");

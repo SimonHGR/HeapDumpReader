@@ -1,9 +1,6 @@
 package com.dancingcloudservices.heapdumpreader.utils;
 
-import com.dancingcloudservices.heapdumpreader.ClassRecord;
-import com.dancingcloudservices.heapdumpreader.Record;
-import com.dancingcloudservices.heapdumpreader.RecordBuilder;
-import com.dancingcloudservices.heapdumpreader.StringRecord;
+import com.dancingcloudservices.heapdumpreader.*;
 
 import java.io.InputStream;
 import java.util.HashMap;
@@ -22,7 +19,7 @@ public enum Tag {
     START_THREAD(0x0A, null),
     END_THREAD(0x0B, null),
     HEAP_DUMP(0x0C, null),
-    HEAP_DUMP_SEGMENT(0x1C, null),
+    HEAP_DUMP_SEGMENT(0x1C, HeapDumpSegment::new),
     HEAP_DUMP_END(0x2C, null),
     CPU_SAMPLES(0x0D, null),
     CONTROL_SETTINGS(0x0E, null)
