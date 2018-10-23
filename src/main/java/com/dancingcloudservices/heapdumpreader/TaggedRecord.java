@@ -66,12 +66,12 @@ public class TaggedRecord {
             self.tag = Tag.ofID((byte) is.read());
             self.timeOffset = Utils.readU4(is);
             self.dataLength = Utils.readU4(is);
-            // TODO handle particular record, creating / populating subtype if requested
-            RecordBuilder rb = self.tag.builder;
+            RecordBuilder rb = self.tag.builder; // find builder from the tag
             if (rb != null) {
                 self.contents = rb.build(is, self.dataLength, stringRecordMap, classRecordMap, objectCountMap);
             } else {
-                is.skip(self.dataLength); // dump this record for now!
+                // if no builder in tag, we'll simply skip this record
+                is.skip(self.dataLength);
             }
             return self;
         }

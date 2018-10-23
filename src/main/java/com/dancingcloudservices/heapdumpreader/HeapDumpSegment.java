@@ -1,9 +1,13 @@
 package com.dancingcloudservices.heapdumpreader;
 
+import com.dancingcloudservices.heapdumpreader.utils.HeapDumpTag;
+import com.dancingcloudservices.heapdumpreader.utils.Utils;
+
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
 
-public class HeapDumpSegment {
+public class HeapDumpSegment implements Record {
     public HeapDumpSegment(InputStream is, long dataLength,
                            Map<Long, StringRecord> strings,
                            Map<Long, ClassRecord> classes,
@@ -22,5 +26,25 @@ public class HeapDumpSegment {
          - I might need to keep track of arrays, as they can eat a lot of memory quite distinct from
            the objects they contain.
          */
+
+        // don't read past end of our allocated chunk (should end perfectly, might warrant an assertion)
+        long heapRecordsProcessed = 0;
+        while (dataLength > 0) {
+            try {
+                HeapDumpTag tag = HeapDumpTag.ofID((int)Utils.readU1(is));
+                HeapDumpRecordBuilder builder = tag.builder;
+                HeapDumpRecord record = builder.build(tag, is, strings, classes, objects);
+                dataLength -= record.getBytesRead();
+                heapRecordsProcessed++;
+                // TODO Currently crashes after record 13570539
+                if (heapRecordsProcessed > 13570530) {
+                    Utils.debug("Heap records processed: " + heapRecordsProcessed);
+                }
+            } catch (IOException ioe) {
+                // io exceptions are fatal to the entire remaining processing (they'll break the
+                // synchronization of "how many more bytes" even if we get back on track
+                throw new RuntimeException("Fatal, file reading failed", ioe);
+            }
+        }
     }
 }

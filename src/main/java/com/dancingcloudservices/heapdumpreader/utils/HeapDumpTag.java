@@ -21,16 +21,23 @@ public enum HeapDumpTag {
     ROOT_THREAD_BLOCK(0x06, getFixedBlockBuilder(1, 4)),
     ROOT_MONITOR_USED(0x07, getFixedBlockBuilder(1, 0)),
     ROOT_THREAD_OBJECT(0x08, getFixedBlockBuilder(1, 8)),
-    ROOT_CLASS_DUMP(0x20, new ClassDumpRecordBuilder()),
-    ROOT_INSTANCE_DUMP(0x21, new InstanceDumpRecordBuilder()),
-    ROOT_OBJECT_ARRAY_DUMP(0x22, new ObjectArrayDumpRecordBuilder()),
-    ROOT_PRIMITIVE_ARRAY_DUMP(0x23, new PrimitiveArrayDumpRecordBuilder());
+    CLASS_DUMP(0x20, new ClassDumpRecordBuilder()),
+    INSTANCE_DUMP(0x21, new InstanceDumpRecordBuilder()),
+    OBJECT_ARRAY_DUMP(0x22, new ObjectArrayDumpRecordBuilder()),
+    PRIMITIVE_ARRAY_DUMP(0x23, new PrimitiveArrayDumpRecordBuilder());
 
     private static HeapDumpRecordBuilder getFixedBlockBuilder(int idCount, int byteCount) {
         return (tag, is, strings, classes, objects) -> {
+            Utils.debug("Building fixed length Heap Dump block, tag is " + tag);
             try {
-                is.skip(8 * idCount + byteCount);
+                final long totalBytesRead = Utils.identifierSize * idCount + byteCount;
+                is.skip(totalBytesRead);
                 return new HeapDumpRecord() {
+                    @Override
+                    public long getBytesRead() {
+                        return totalBytesRead;
+                    }
+
                     @Override
                     public String toString() {
                         return "HeapDump fixed record, tag: " + tag;

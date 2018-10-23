@@ -29,6 +29,7 @@ public class ClassRecord implements Record {
         }
         objectId = objectIdToUse;
         name = strings.getOrDefault(nameIDToUse, new StringRecord(-1, "Unknown")).value;
+        classes.put(objectIdToUse, this);
     }
 
     @Override

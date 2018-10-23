@@ -1,3 +1,5 @@
 package com.dancingcloudservices.heapdumpreader;
 
-public interface HeapDumpRecord {}
+public interface HeapDumpRecord {
+    long getBytesRead();
+}
