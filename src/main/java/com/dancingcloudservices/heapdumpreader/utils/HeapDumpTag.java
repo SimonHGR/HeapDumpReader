@@ -14,9 +14,9 @@ public enum HeapDumpTag {
     }),
     ROOT_UNKNOWN(0xFF, getFixedBlockBuilder(1, 0)),
     ROOT_JNI_GLOBAL(0x01, getFixedBlockBuilder(2, 0)),
-    ROOT_JNI_LOCAL(0x02, getFixedBlockBuilder(1, 8)),
-    ROOT_JAVA_FRAME(0x03, getFixedBlockBuilder(1, 8)),
-    ROOT_NATIVE_STACK(0x04, getFixedBlockBuilder(1, 4)),
+    ROOT_JNI_LOCAL(0x02, getJniLocalBlockBuilder()),
+    ROOT_JAVA_FRAME(0x03, getFixedBlockBuilder(1, 8)), // was 1,8
+    ROOT_NATIVE_STACK(0x04, getFixedBlockBuilder(1, 0)), // was 1,4
     ROOT_STICKY_CLASS(0x05, getFixedBlockBuilder(1, 4)),
     ROOT_THREAD_BLOCK(0x06, getFixedBlockBuilder(1, 4)),
     ROOT_MONITOR_USED(0x07, getFixedBlockBuilder(1, 0)),
@@ -25,6 +25,42 @@ public enum HeapDumpTag {
     INSTANCE_DUMP(0x21, new InstanceDumpRecordBuilder()),
     OBJECT_ARRAY_DUMP(0x22, new ObjectArrayDumpRecordBuilder()),
     PRIMITIVE_ARRAY_DUMP(0x23, new PrimitiveArrayDumpRecordBuilder());
+
+
+    // Create a flexible reader for the weird JNI block
+    private static HeapDumpRecordBuilder getJniLocalBlockBuilder() {
+        return (tag, is, strings, classes, objects) -> {
+            Utils.debug("Building wobbly length ROOT_JNI_LOCAL Heap Dump block");
+            try {
+                long bytesRead = Utils.identifierSize + 8;
+                is.skip(Utils.identifierSize);
+                is.mark(16); // limit is controlled by buffer size, this limit's irrelevant really.
+                is.skip(8); // go hunting at "normal" offset
+                HeapDumpTag proposedTag = HeapDumpTag.ofID((int)Utils.readU1(is)); // read tag from there...
+                is.reset(); //
+                if (proposedTag == BAD_TAG) {
+                    bytesRead -= 8;
+                } else {
+                    is.skip(8); // if what was found is good, wind us back to be ready to re-read the tag
+                }
+                final long totalBytesRead = bytesRead;
+
+                return new HeapDumpRecord() {
+                    @Override
+                    public long getBytesRead() {
+                        return totalBytesRead;
+                    }
+
+                    @Override
+                    public String toString() {
+                        return "Jiggly JNI record (total bytes = " + totalBytesRead + ") tag: " + tag;
+                    }
+                };
+            } catch (IOException ioe) {
+                throw new RuntimeException("Failed reading fixed size HeapDump block ", ioe);
+            }
+        };
+    }
 
     private static HeapDumpRecordBuilder getFixedBlockBuilder(int idCount, int byteCount) {
         return (tag, is, strings, classes, objects) -> {
@@ -53,7 +89,9 @@ public enum HeapDumpTag {
 
     static {
         for (HeapDumpTag t : values()) {
-            lookup.put(t.value, t);
+            if (t.value != 0) { // don't put BAD_TAG into the map :)
+                lookup.put(t.value, t);
+            }
         }
     }
 

@@ -33,11 +33,18 @@ public class HeapDumpSegment implements Record {
             try {
                 HeapDumpTag tag = HeapDumpTag.ofID((int)Utils.readU1(is));
                 HeapDumpRecordBuilder builder = tag.builder;
+                if (tag == HeapDumpTag.BAD_TAG) {
+                    // give up on the rest of this HEAP_DUMP_SEGMENT-- not sure what else to do!?
+                    is.skip(dataLength - 1);
+                    return;
+                }
+                if (tag == HeapDumpTag.ROOT_NATIVE_STACK) {
+                    Utils.debug("Get ready!");
+                }
                 HeapDumpRecord record = builder.build(tag, is, strings, classes, objects);
-                dataLength -= record.getBytesRead();
+                dataLength -= (record.getBytesRead() + 1);
                 heapRecordsProcessed++;
-                // TODO Currently crashes after record 13570539
-                if (heapRecordsProcessed > 13570530) {
+                if (heapRecordsProcessed % 100_000 == 0) {
                     Utils.debug("Heap records processed: " + heapRecordsProcessed);
                 }
             } catch (IOException ioe) {

@@ -45,7 +45,7 @@ public class TaggedRecord {
         private InputStream is;
         private Map<Long, StringRecord> stringRecordMap;
         private Map<Long, ClassRecord> classRecordMap;
-        private Map<Long, Long> objectCountMap = new TreeMap<>();
+        private Map<Long, Long> objectCountMap;
 
         public Builder source(InputStream is) {
             this.is = is;
@@ -59,6 +59,11 @@ public class TaggedRecord {
 
         public Builder classMap(Map<Long, ClassRecord> classMap) {
             classRecordMap = classMap;
+            return this;
+        }
+
+        public Builder objectCountMap(Map<Long, Long> objectCountMap) {
+            this.objectCountMap = objectCountMap;
             return this;
         }
 

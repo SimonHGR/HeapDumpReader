@@ -10,11 +10,16 @@ public class MyBufferedInputStream extends InputStream {
     private final InputStream source;
     private final byte[][] buffs;
     // this buffer contains live data from progress onward, the other is old
-    // initialization will revert it to zero!
+    // initialization will set bufInUse to zero!
     private int bufInUse = 1;
     private int next = 0;
     private int thisBufferHighWater;
     private boolean closed = false;
+    private int markBufferInuse = 0;
+    private int markNext = 0;
+    private int readSinceMark = 0;
+    private boolean markSet = false;
+    private boolean nextBufferAlreadyValidFromReset = false;
     private int buffersFullCount = 0; // for debug
 
     public MyBufferedInputStream(InputStream source, int bufferSize) throws IOException {
@@ -33,10 +38,14 @@ public class MyBufferedInputStream extends InputStream {
         int nextBuffer = (bufInUse + 1) % BUF_COUNT;
         byte[] buffer = buffs[nextBuffer];
 
-        thisBufferHighWater = source.read(buffer, 0, BUF_SIZE);
+        if (!nextBufferAlreadyValidFromReset) {
+            thisBufferHighWater = source.read(buffer, 0, BUF_SIZE);
+            buffersFullCount++;
+        } else {
+            nextBufferAlreadyValidFromReset = false;
+        }
         bufInUse = nextBuffer; // now using the new one
         next = 0;
-        buffersFullCount++;
     }
 
     @Override
@@ -64,6 +73,12 @@ public class MyBufferedInputStream extends InputStream {
                 inBuffer = this.thisBufferHighWater;
             }
         }
+        if (markSet) {
+            readSinceMark += copiedSoFar;
+            if (readSinceMark >= BUF_SIZE) {
+                markSet = false; // overran, give up
+            }
+        }
         return copiedSoFar;
     }
 
@@ -85,6 +100,32 @@ public class MyBufferedInputStream extends InputStream {
         int inBuffer = thisBufferHighWater - next;
         if (inBuffer > 0) return inBuffer;
         else return source.available();
+    }
+
+    @Override
+    public void mark(int readLimit) {
+        markBufferInuse = bufInUse;
+        markNext = next;
+        readSinceMark = 0;
+        markSet = true;
+        nextBufferAlreadyValidFromReset = false;
+    }
+
+    @Override
+    public void reset() throws IOException {
+        if (!markSet) throw new IOException("No mark set (or readLimit exceeded)");
+        if (markBufferInuse != bufInUse) {
+            nextBufferAlreadyValidFromReset = true;
+        }
+        bufInUse = markBufferInuse;
+        next = markNext;
+        readSinceMark = 0;
+        markSet = false;
+    }
+
+    @Override
+    public boolean markSupported() {
+        return true;
     }
 
     @Override

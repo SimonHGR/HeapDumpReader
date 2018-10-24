@@ -72,15 +72,11 @@ public class Utils {
             bb.put((byte)is.read());
         }
         bb.flip();
-        return utf8Decoder.decode(bb).toString();
-//        try {
-//            return utf8Decoder.decode(bb).toString();
-//        } catch (IOException e) {
-//            String asAscii = new String(bb.array(), 0);
-//            System.err.println("ByteBufferfailed to convert to UTF-8. As ASCII looks like: " + asAscii + " ");
-//            System.err.println("Exception is " + e.getMessage());
-//            throw e;
-//        }
+        try {
+            return utf8Decoder.decode(bb).toString();
+        } catch (IOException e) {
+            return "Bad UTF-8?";
+        }
     }
 
     public static void setIdentifierSize(long size) {

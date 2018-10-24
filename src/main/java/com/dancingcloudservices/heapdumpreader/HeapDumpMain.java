@@ -41,6 +41,7 @@ public class HeapDumpMain {
     public static void main(String[] args) throws Throwable {
         Map<Long, StringRecord> stringRecordMap = new TreeMap<>();
         Map<Long, ClassRecord> classRecordMap = new TreeMap<>();
+        Map<Long, Long> objectCountMap = new TreeMap<>();
 
         String filename = args.length > 0 ? args[0]
                 : "/media/simon/2cffd6bf-24ea-453a-acef-a5ca32fe8929/JAMF-Data/Week 1 - Data collection/Monday - 10-01-2018/std-pagetia1-tc-4/std-pagetia1-tc-4_monday.dump";
@@ -71,6 +72,7 @@ public class HeapDumpMain {
             TaggedRecord tr = TaggedRecord.builder()
                     .stringMap(stringRecordMap)
                     .classMap(classRecordMap)
+                    .objectCountMap(objectCountMap)
                     .source(dumpInput)
                     .build();
 
@@ -83,6 +85,10 @@ public class HeapDumpMain {
             }
         }
         Utils.debug(records + " top-level records read");
+        objectCountMap.entrySet().stream()
+                .sorted(Map.Entry.<Long, Long>comparingByValue())
+                .map(e -> classRecordMap.get(e.getKey()).name + " has " + e.getValue() + " instances")
+                .forEach(System.out::println);
 //        stringRecordMap.forEach((k, v) -> System.err.println("String " + v + " id is " + k));
     }
 }
