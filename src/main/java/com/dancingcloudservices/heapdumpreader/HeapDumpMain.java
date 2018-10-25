@@ -80,12 +80,13 @@ public class HeapDumpMain {
             if (showThisTag(tr.getTag())){
                 Utils.debug("****" + tr);
             } else {
-                if (records % 10_000 == 0) {
+                //if (records % 10_000 == 0) {
                     Utils.debug("Records: " + records);
-                }
+                //}
             }
         }
         Utils.debug(records + " top-level records read");
+        Utils.debug("Object map entry count: " + objectCountMap.size());
         objectCountMap.entrySet().stream()
                 .sorted(Map.Entry.<Long, Long>comparingByValue())
                 .map(e -> classRecordMap.get(e.getKey()).name + " has " + e.getValue() + " instances")

@@ -18,7 +18,7 @@ public enum Tag {
     HEAP_SUMMARY(0x07, null),
     START_THREAD(0x0A, null),
     END_THREAD(0x0B, null),
-    HEAP_DUMP(0x0C, null),
+    HEAP_DUMP(0x0C, HeapDumpSegment::new),
     HEAP_DUMP_SEGMENT(0x1C, HeapDumpSegment::new),
     HEAP_DUMP_END(0x2C, null),
     CPU_SAMPLES(0x0D, null),
