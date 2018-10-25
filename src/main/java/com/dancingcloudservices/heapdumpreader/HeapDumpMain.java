@@ -35,7 +35,8 @@ public class HeapDumpMain {
     }
 
     public static boolean acceptableDumpFormat(String s) {
-        return s.equals("JAVA PROFILE 1.0.2");
+        return s.equals("JAVA PROFILE 1.0.2") ||
+               s.equals("JAVA PROFILE 1.0.1");
     }
 
     public static void main(String[] args) throws Throwable {
