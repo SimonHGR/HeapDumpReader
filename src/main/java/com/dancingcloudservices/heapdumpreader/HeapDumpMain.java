@@ -89,7 +89,7 @@ public class HeapDumpMain {
         Utils.debug("Object map entry count: " + objectCountMap.size());
         objectCountMap.entrySet().stream()
                 .sorted(Map.Entry.<Long, Long>comparingByValue())
-                .map(e -> classRecordMap.get(e.getKey()).name + " has " + e.getValue() + " instances")
+                .map(e -> classRecordMap.get(e.getKey()).name + " :INSTANCE-COUNT: " + e.getValue())
                 .forEach(System.out::println);
 //        stringRecordMap.forEach((k, v) -> System.err.println("String " + v + " id is " + k));
     }

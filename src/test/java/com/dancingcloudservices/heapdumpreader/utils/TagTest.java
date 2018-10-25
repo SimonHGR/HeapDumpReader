@@ -10,9 +10,9 @@ public class TagTest {
     public void testTagLookup() {
         Assert.assertEquals("Should be HEAP_DUMP_END ", Tag.HEAP_DUMP_END, Tag.ofID(0x2C));
     }
-    @Test(expected = NoSuchElementException.class)
+
+    @Test
     public void testTagLookupFailure() {
-        Tag.ofID(0x00);
-        Assert.fail("Should not match ");
+        Assert.assertEquals(Tag.BAD_TAG, Tag.ofID(0x00));
     }
 }
