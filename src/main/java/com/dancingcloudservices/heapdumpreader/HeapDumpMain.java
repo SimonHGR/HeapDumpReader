@@ -7,9 +7,7 @@ import com.dancingcloudservices.heapdumpreader.utils.Utils;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.time.Instant;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeMap;
+import java.util.*;
 
 public class HeapDumpMain {
     private static final Set<Tag> tagsToShow = Set.of(
@@ -45,7 +43,8 @@ public class HeapDumpMain {
         Map<Long, Long> objectCountMap = new TreeMap<>();
 
         String filename = args.length > 0 ? args[0]
-                : "/media/simon/2cffd6bf-24ea-453a-acef-a5ca32fe8929/JAMF-Data/Week 1 - Data collection/Monday - 10-01-2018/std-pagetia1-tc-4/std-pagetia1-tc-4_monday.dump";
+                : "/home/simon/JAMF/DataSets/Monday-01-10-2018/std-pagetia1-tc-4/std-pagetia1-tc-4_monday.dump";
+//                : "/media/simon/2cffd6bf-24ea-453a-acef-a5ca32fe8929/JAMF-Data/Week 1 - Data collection/Monday - 10-01-2018/std-pagetia1-tc-4/std-pagetia1-tc-4_monday.dump";
         FileInputStream fis = new FileInputStream(filename);
         InputStream dumpInput =
                 new MyBufferedInputStream(
